@@ -1,20 +1,11 @@
-  {
-    "version": 2,
-    "builds": [
-        {
-            "src": "server.js",
-            "use": "@vercel/node",
-            "config": {
-                "includeFiles": [
-                    "dist/**"
-                ]
-            }
-        }
-    ],
-    "routes": [
-        {
-            "src": "/(.*)",
-            "dest": "server.js"
-        }
-    ]
+{
+  "functions": {
+    "api/*.js": {
+      "runtime": "nodejs20.x"
+    }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/api/index" },
+    { "source": "/webhooks", "destination": "/api/webhooks" }
+  ]
 }
