@@ -42,7 +42,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ message: 'Email and password are required.' });
     }
 
-    const recruiter = await Recruiter.findOne({ email });
+    const recruiter = await Recruiter.findOne({ email }).select('+password');
     if (!recruiter) {
       return res.status(401).json({ message: 'Invalid credentials.' });
     }

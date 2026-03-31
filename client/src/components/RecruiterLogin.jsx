@@ -23,6 +23,15 @@ const RecruiterLogin = () => {
     }
 
     try {
+      let base64Image = '';
+      if (image && state === 'Sign Up') {
+        const reader = new FileReader();
+        base64Image = await new Promise((resolve) => {
+          reader.onload = () => resolve(reader.result);
+          reader.readAsDataURL(image);
+        });
+      }
+
       const endpoint = state === 'Login' ? '/api/recruiters/login' : '/api/recruiters/register';
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -31,7 +40,7 @@ const RecruiterLogin = () => {
           name: state === 'Sign Up' ? name : undefined,
           email: email.trim().toLowerCase(),
           password,
-          image: image ? URL.createObjectURL(image) : '',
+          image: base64Image,
         }),
       });
 
@@ -73,16 +82,31 @@ const RecruiterLogin = () => {
         {error && <p className='text-red-500 text-sm mt-3'>{error}</p>}
 
         {state === 'Sign Up' && (
-          <div className='border px-4 py-2 flex items-center gap-2 rounded-full mt-5'>
-            <img className='w-4 h-4' src={assets.person_icon} alt='' />
-            <input
-              className='outline-none text-sm w-full'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              type='text'
-              placeholder='Company Name'
-            />
-          </div>
+          <>
+            <div className='border px-4 py-2 flex items-center gap-2 rounded-full mt-5'>
+              <img className='w-4 h-4' src={assets.person_icon} alt='' />
+              <input
+                className='outline-none text-sm w-full'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                type='text'
+                placeholder='Company Name'
+              />
+            </div>
+            <div className='border px-4 py-2 flex items-center gap-2 rounded-full mt-4'>
+              <label htmlFor='recruiterImage' className='text-sm text-gray-500 cursor-pointer flex-1 flex items-center justify-between'>
+                {image ? "Change Image" : "Upload Company Logo"}
+                {image && <img src={URL.createObjectURL(image)} className="w-6 h-6 rounded-full object-cover" alt="preview"/>}
+              </label>
+              <input
+                id='recruiterImage'
+                className='hidden'
+                onChange={(e) => setImage(e.target.files[0])}
+                type='file'
+                accept='image/*'
+              />
+            </div>
+          </>
         )}
 
         <div className='border px-4 py-2 flex items-center gap-2 rounded-full mt-5'>

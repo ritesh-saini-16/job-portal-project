@@ -15,7 +15,10 @@ const Navbar = () => {
           <div className='flex items-center gap-3'>
             <Link to={'/applications'}>Applied Jobs</Link>
             <p>|</p>
-            <p className='max-sm:hidden'>Hi, {user.name} </p>
+            <p className='max-sm:hidden flex items-center gap-2'>
+              {user.image && <img className='w-8 h-8 rounded-full border border-gray-200 object-cover' src={user.image} alt='profile' />}
+              Hi, {user.name} 
+            </p>
             <button className='text-sm text-red-500' onClick={logout}>
               Logout
             </button>
