@@ -1,11 +1,14 @@
 {
+  "version": 2,
   "functions": {
-    "api/*.js": {
+    "server/server.js": {
       "runtime": "nodejs20.x"
     }
   },
   "rewrites": [
-    { "source": "/", "destination": "/api/index" },
-    { "source": "/webhooks", "destination": "/api/webhooks" }
+    {
+      "source": "/(.*)",
+      "destination": "/server/server.js"
+    }
   ]
 }
