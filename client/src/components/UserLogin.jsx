@@ -3,9 +3,9 @@ import { assets } from '../assets/assets';
 import { AppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 
-const RecruiterLogin = () => {
+const UserLogin = () => {
   const navigate = useNavigate();
-  const { setShowRecruiterLogin, login } = useContext(AppContext);
+  const { setShowUserLogin, login } = useContext(AppContext);
 
   const [state, setState] = useState('Login');
   const [name, setName] = useState('');
@@ -23,7 +23,7 @@ const RecruiterLogin = () => {
     }
 
     try {
-      const endpoint = state === 'Login' ? '/api/recruiters/login' : '/api/recruiters/register';
+      const endpoint = state === 'Login' ? '/api/users/login' : '/api/users/register';
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -43,8 +43,8 @@ const RecruiterLogin = () => {
       }
 
       login(data.user, data.token);
-      setShowRecruiterLogin(false);
-      navigate('/dashboard');
+      setShowUserLogin(false);
+      navigate('/');
     } catch (err) {
       setError(err.message || 'Network error');
     }
@@ -61,13 +61,13 @@ const RecruiterLogin = () => {
     <div className='absolute top-0 left-0 right-0 bottom-0 z-50 backdrop-blur-sm bg-black/30 flex justify-center items-center'>
       <form onSubmit={onSubmitHandler} className='relative bg-white p-10 rounded-xl text-slate-500 shadow-lg w-full max-w-sm'>
         <img
-          onClick={() => setShowRecruiterLogin(false)}
+          onClick={() => setShowUserLogin(false)}
           className='absolute top-5 right-5 w-4 h-4 cursor-pointer'
           src={assets.cross_icon}
           alt='Close'
         />
 
-        <h1 className='text-center text-2xl text-neutral-700 font-medium'>Recruiter {state}</h1>
+        <h1 className='text-center text-2xl text-neutral-700 font-medium'>User {state}</h1>
         <p className='text-sm text-center mt-2'>Please fill in your details to continue</p>
 
         {error && <p className='text-red-500 text-sm mt-3'>{error}</p>}
@@ -80,7 +80,7 @@ const RecruiterLogin = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               type='text'
-              placeholder='Company Name'
+              placeholder='Full Name'
             />
           </div>
         )}
@@ -133,4 +133,4 @@ const RecruiterLogin = () => {
   );
 };
 
-export default RecruiterLogin;
+export default UserLogin;

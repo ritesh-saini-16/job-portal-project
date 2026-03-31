@@ -10,16 +10,18 @@ import ManageJobs from './pages/ManageJobs'
 import ViewApplications from './pages/ViewApplications'
 
 import RecruiterLogin from './components/RecruiterLogin'
+import UserLogin from './components/UserLogin'
 import { AppContext } from './context/AppContext'
 import { useContext } from 'react'
 
 const App = () => {
 
-  const { showRecruiterLogin } = useContext(AppContext)
+  const { showRecruiterLogin, showUserLogin } = useContext(AppContext)
 
   return (
     <div>
       {showRecruiterLogin && <RecruiterLogin />}
+      {showUserLogin && <UserLogin />}
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path='/apply-job/:id' element={<ApplyJob />} />

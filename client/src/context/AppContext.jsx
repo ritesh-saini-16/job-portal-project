@@ -1,4 +1,4 @@
-import { createContext , useState , useEffect} from "react";
+import { createContext, useState } from "react";
 import { jobsData } from "../assets/assets";
 
 export const AppContext = createContext();
@@ -11,20 +11,35 @@ export const AppContextProvider = (props) => {
 
   const [isSearched , setIsSearched] = useState(false)
   const [showRecruiterLogin, setShowRecruiterLogin] = useState(false)
+  const [showUserLogin, setShowUserLogin] = useState(false)
 
-    const [jobs , setJobs] = useState([]);
-
-    // function to fetch jobs
-
-    const fetchJobs = async () => {
-
-      setJobs(jobsData);
-
+  const [user, setUser] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('jobportal_user');
+      return stored ? JSON.parse(stored) : null;
     }
+    return null;
+  });
 
-    useEffect(() => {
-      fetchJobs();
-    }, []);
+  const [jobs , setJobs] = useState(jobsData);
+
+  const login = (userData, token) => {
+    setUser(userData);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('jobportal_user', JSON.stringify(userData));
+      localStorage.setItem('jobportal_token', token);
+    }
+  };
+
+  const logout = () => {
+    setUser(null);
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('jobportal_user');
+      localStorage.removeItem('jobportal_token');
+    }
+    setShowRecruiterLogin(false);
+    setShowUserLogin(false);
+  };
 
   const value = {
     searchFilter,
@@ -33,8 +48,13 @@ export const AppContextProvider = (props) => {
     setIsSearched,
     jobs,
     setJobs,
+    user,
+    login,
+    logout,
     showRecruiterLogin,
-    setShowRecruiterLogin
+    setShowRecruiterLogin,
+    showUserLogin,
+    setShowUserLogin
   };
 
 

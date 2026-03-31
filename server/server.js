@@ -2,11 +2,13 @@ import './config/instrument.js';
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import { connect } from 'mongoose';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 import connectDB from './config/db.js';
-
+import User from './models/User.js';
 import Sentry from './config/instrument.js';
-import {clerkWebhooks} from './controllers/webhooks.js'
+import userRoutes from './routes/userRoutes.js';
+import recruiterRoutes from './routes/recruiterRoutes.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -27,14 +29,16 @@ app.use(express.json());
 
 // routes
 app.get('/', (req, res) => {
-    res.send('API working ');
+    res.send('API working');
 })
 
-app.get("/debug-sentry" , function mainHandler(req , res){
-    throw new Error("Debug Sentry Error")
+app.get('/debug-sentry', function mainHandler(req, res){
+    throw new Error('Debug Sentry Error');
 })
 
-app.post("/webhooks" , clerkWebhooks)
+// auth endpoints
+app.use('/api/users', userRoutes);
+app.use('/api/recruiters', recruiterRoutes);
 
 // PORT
 

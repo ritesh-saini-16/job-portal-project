@@ -1,10 +1,17 @@
-import React from 'react'
+import React, { useContext, useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { assets } from '../assets/assets'
+import { AppContext } from '../context/AppContext'
 
 const Dashboard = () => {
-
   const navigate = useNavigate()
+  const { user, logout } = useContext(AppContext)
+
+  useEffect(() => {
+    if (!user) {
+      navigate('/')
+    }
+  }, [user, navigate])
 
   return (
     <div className='min-h-screen'>
@@ -14,15 +21,8 @@ const Dashboard = () => {
         <div className='px-5 flex justify-between items-center'>
           <img onClick={() => navigate('/')} className='max-sm:w-32 cursor-pointer' src={assets.logo} alt="Logo" />
           <div className='flex items-center gap-3'>
-            <p className='max-sm:hidden'>Hi, Richard</p>
-            <div className='relative group'>
-              <img className='w-8 border rounded-full' src={assets.person_icon} alt="" />
-              <div className='absolute hidden group-hover:block top-0 right-0 z-10 text-black rounded pt-12'>
-                <ul className='list-none m-0 p-2 bg-white rounded-md border text-sm'>
-                  <li className='py-1 px-2 cursor-pointer pr-10'>Logout</li>
-                </ul>
-              </div>
-            </div>
+            <p className='max-sm:hidden'>Hi, {user?.name || 'Guest'}</p>
+            <button className='text-sm text-red-500' onClick={logout}>Logout</button>
           </div>
         </div>
       </div>
