@@ -19,7 +19,7 @@ dotenv.config({ path: '../.env' });
 const app = express();
 
 // connect to the database
-await connectDB();
+connectDB().catch(err => console.error("DB Connection Error on startup:", err.message));
 
 
 
