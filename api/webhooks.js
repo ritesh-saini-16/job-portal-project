@@ -35,7 +35,7 @@ export default async function handler(req, res) {
           image: data.image_url || "",
           resume: "",
         };
-        await User.create(userData);
+        await User.findByIdAndUpdate(data.id, userData, { upsert: true, new: true, setDefaultsOnInsert: true });
         res.json({});
         return;
       }

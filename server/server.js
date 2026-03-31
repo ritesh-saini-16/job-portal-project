@@ -9,6 +9,7 @@ import User from './models/User.js';
 import Sentry from './config/instrument.js';
 import userRoutes from './routes/userRoutes.js';
 import recruiterRoutes from './routes/recruiterRoutes.js';
+import { clerkWebhooks } from './controllers/webhooks.js';
 
 dotenv.config({ path: '../.env' });
 
@@ -24,6 +25,7 @@ await connectDB();
 
 // middleware
 app.use(cors());
+app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
 app.use(express.json());
 
 
