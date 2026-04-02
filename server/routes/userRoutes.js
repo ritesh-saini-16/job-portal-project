@@ -1,64 +1,28 @@
 import express from 'express';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import User from '../models/User.js';
+import { getUserData, applyForJob, getUserJobApplications, updateUserResume, registerUser, loginUser } from '../controllers/userController.js';
+import { protectUser } from '../middleware/authMiddleware.js';
+import multer from 'multer';
 
+const upload = multer({ dest: 'uploads/' });
 const router = express.Router();
 
-router.post('/register', async (req, res) => {
-  try {
-    const { name, email, password, image } = req.body;
-    if (!name || !email || !password) {
-      return res.status(400).json({ message: 'Name, email, and password are required.' });
-    }
+// register user
+router.post('/register', upload.single('image'), registerUser);
 
-    const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(409).json({ message: 'User email already exists.' });
-    }
+// login user
+router.post('/login', loginUser);
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+// get user data (also aliased as /me for client compatibility)
+router.get('/user', protectUser, getUserData);
+router.get('/me', protectUser, getUserData);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-      image: image || '',
-    });
+// apply for a job — resume must already be saved on profile (upload via /update-resume on Applied Jobs)
+router.post('/apply', protectUser, applyForJob);
 
-    const token = jwt.sign({ id: user._id, email: user.email, role: 'user' }, process.env.JWT_SECRET || 'secret-key', { expiresIn: '7d' });
+// get user applied applications
+router.get('/applications', protectUser, getUserJobApplications);
 
-    res.json({ user: { id: user._id, name: user.name, email: user.email, image: user.image, role: 'user' }, token });
-  } catch (error) {
-    console.error('Registration failure:', error);
-    res.status(500).json({ message: 'Server error during registration.' });
-  }
-});
-
-router.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    if (!email || !password) {
-      return res.status(400).json({ message: 'Email and password are required.' });
-    }
-
-    const user = await User.findOne({ email }).select('+password');
-    if (!user) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: 'Invalid credentials.' });
-    }
-
-    const token = jwt.sign({ id: user._id, email: user.email, role: 'user' }, process.env.JWT_SECRET || 'secret-key', { expiresIn: '7d' });
-
-    res.json({ user: { id: user._id, name: user.name, email: user.email, image: user.image, role: 'user' }, token });
-  } catch (error) {
-    console.error('Login failure:', error);
-    res.status(500).json({ message: 'Server error during login.' });
-  }
-});
+// update user resume
+router.post('/update-resume', protectUser, upload.single('resume'), updateUserResume);
 
 export default router;

@@ -8,13 +8,24 @@ const connectDB = async () => {
   mongoose.connection.on("connected", () => console.log("MongoDB database connected successfully"));
   mongoose.connection.on("error", (err) => console.error("MongoDB connection error:", err.message));
 
+  // Mongoose connection options
+  const baseOptions = {
+    dbName: "job-portal",
+    // Allow query buffering while initial connection is pending.
+    bufferCommands: true,
+  };
+
   // Try Atlas first if URI is provided
   if (uri) {
     try {
       console.log("Attempting to connect to MongoDB Atlas...");
       await mongoose.connect(uri, {
-        dbName: "job-portal",
-        serverSelectionTimeoutMS: 10000,
+        ...baseOptions,
+        serverSelectionTimeoutMS: 30000,
+        socketTimeoutMS: 45000,
+        connectTimeoutMS: 30000,
+        maxPoolSize: 10,
+        minPoolSize: 5,
       });
       console.log("Connected to MongoDB Atlas successfully");
       return;
@@ -27,7 +38,8 @@ const connectDB = async () => {
         msg.includes("SSL routines") ||
         msg.includes("tlsv1 alert internal error") ||
         msg.includes("ReplicaSetNoPrimary") ||
-        msg.includes("Could not connect to any servers");
+        msg.includes("Could not connect to any servers") ||
+        msg.includes("buffering timed out");
 
       // Only fallback to local if it's a network issue and fallback is enabled
       if (isAtlasNetworkIssue && process.env.MONGO_FALLBACK_LOCAL === "true") {
@@ -43,17 +55,23 @@ const connectDB = async () => {
   try {
     console.log("Attempting to connect to local MongoDB...");
     await mongoose.connect(localUri, {
-      dbName: "job-portal",
+      ...baseOptions,
       directConnection: true,
-      serverSelectionTimeoutMS: 8000,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 45000,
+      connectTimeoutMS: 30000,
+      maxPoolSize: 10,
+      minPoolSize: 5,
     });
     console.log("Connected to local MongoDB successfully");
     Sentry.setTag("db_target", "local");
   } catch (localErr) {
     console.error("Local MongoDB connection failed:", localErr.message);
+    console.warn("⚠️  WARNING: Running without database connection. Database operations will fail.");
+    console.warn("Please ensure MongoDB is running on", localUri);
     Sentry.captureException(localErr);
     Sentry.setTag("db_target", "failed");
-    throw new Error("Failed to connect to both Atlas and local MongoDB");
+    // Don't throw - allow the server to start for development
   }
 };
 

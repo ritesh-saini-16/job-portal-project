@@ -1,18 +1,76 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import Quill from 'quill'
 import 'quill/dist/quill.snow.css'
+import axios from 'axios'
+import { toast } from 'react-toastify'
+import { AppContext } from '../context/AppContext'
 
 const AddJob = () => {
+  const { backendUrl, companyToken, setJobs } = useContext(AppContext)
 
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [category, setCategory] = useState('Programming')
-  const [location, setLocation] = useState('Bangalore')
-  const [level, setLevel] = useState('Beginner level')
+  const [_title, setTitle] = useState('')
+  const [_description, setDescription] = useState('')
+  const [_category, setCategory] = useState('Programming')
+  const [_location, setLocation] = useState('Bangalore')
+  const [_level, setLevel] = useState('Beginner level')
   const [salary, setSalary] = useState(0)
 
   const editorRef = useRef(null)
   const quillRef = useRef(null)
+
+  const onSubmitHandler = async (e) => {
+    e.preventDefault()
+
+    if (!_title.trim() || !_description.trim() || _description === '<p><br></p>' || !_category || !_location || !_level || salary <= 0) {
+      toast.error('Please fill all fields and set a valid salary.')
+      return
+    }
+
+    try {
+      const response = await axios.post(
+        `${backendUrl}/api/companies/post-job`,
+        {
+          title: _title.trim(),
+          description: _description,
+          category: _category,
+          location: _location,
+          level: _level,
+          salary: Number(salary),
+        },
+        {
+          headers: {
+            token: companyToken,
+            'Content-Type': 'application/json',
+          },
+        }
+      )
+
+      if (response.data.success) {
+        toast.success('Job added successfully')
+
+        // Refresh job list in context if setJobs exists
+        if (typeof setJobs === 'function') {
+          setJobs(prev => [response.data.job, ...prev])
+        }
+
+        setTitle('')
+        setDescription('')
+        setCategory('Programming')
+        setLocation('Bangalore')
+        setLevel('Beginner level')
+        setSalary(0)
+
+        if (quillRef.current) {
+          quillRef.current.root.innerHTML = ''
+        }
+      } else {
+        toast.error(response.data.message || 'Job creation failed')
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || error.message || 'Server error while posting job')
+      console.error('AddJob onSubmit error:', error)
+    }
+  }
 
   useEffect(() => {
     // Initialize Quill only once
@@ -28,12 +86,6 @@ const AddJob = () => {
     }
   }, [])
 
-  const onSubmitHandler = (e) => {
-    e.preventDefault()
-    // TODO: Connect to backend
-    alert('Job Added')
-  }
-
   return (
     <form onSubmit={onSubmitHandler} className='flex flex-col items-start gap-4'>
 
@@ -44,7 +96,7 @@ const AddJob = () => {
           type="text" 
           placeholder='Type here' 
           onChange={e => setTitle(e.target.value)} 
-          value={title} 
+          value={_title} 
           required 
         />
       </div>
@@ -110,8 +162,8 @@ const AddJob = () => {
         />
       </div>
 
-      <button className='bg-black text-white px-8 py-2.5 mt-4 rounded'>
-        ADD
+      <button className='bg-black text-white px-10 py-2.5 mt-4 rounded font-medium hover:bg-gray-800 transition-colors'>
+        Post Job
       </button>
 
     </form>

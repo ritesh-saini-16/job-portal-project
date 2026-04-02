@@ -1,5 +1,5 @@
 import React from "react";
-import { useContext, useState, useEffect } from "react";
+import { useContext, useState, useMemo } from "react";
 import { AppContext } from "../context/AppContext";
 import { assets, JobCategories, JobLocations  } from "../assets/assets";
 import JobCard from "./JobCard";
@@ -13,7 +13,6 @@ const JobListing = () => {
 
   const [selectCategories, setSelectCategories] = useState([]);
   const [selectLocations, setSelectLocations] = useState([]);
-  const [selectJobs, setSelectJobs] = useState(jobs);
 
   const handleCategoryChange = (category) => {
     setSelectCategories((prev) =>
@@ -31,7 +30,7 @@ const JobListing = () => {
     );
   };
 
-  useEffect(() => {
+  const filteredJobs = useMemo(() => {
     let filteredJobs = jobs;
 
     // Filter by search title
@@ -62,8 +61,7 @@ const JobListing = () => {
       );
     }
 
-    setSelectJobs(filteredJobs);
-    setCurrentPage(1);
+    return filteredJobs;
   }, [jobs, searchFilter, selectCategories, selectLocations]);
 
   return (
@@ -83,7 +81,7 @@ const JobListing = () => {
                     {searchFilter.title}
                     <img
                       className="cursor-pointer"
-                      onClick={(e) =>
+                      onClick={() =>
                         setSearchFilter((prev) => ({ ...prev, title: "" }))
                       }
                       src={assets.cross_icon}
@@ -96,7 +94,7 @@ const JobListing = () => {
                     {searchFilter.location}
                     <img
                       className="cursor-pointer"
-                      onClick={(e) =>
+                      onClick={() =>
                         setSearchFilter((prev) => ({ ...prev, location: "" }))
                       }
                       src={assets.cross_icon}
@@ -148,14 +146,14 @@ const JobListing = () => {
 
           {/* Job Card Component */}
 
-          {selectJobs.slice((currentPage - 1) * 6, currentPage * 6).map((job, index)=>(
+          {filteredJobs.slice((currentPage - 1) * 6, currentPage * 6).map((job, index)=>(
             <JobCard key={index} job={job}/>
           ))}
 
         </div>
 
         {/* Pagination */}
-        {selectJobs.length > 0 && (
+        {filteredJobs.length > 0 && (
           <div className="flex items-center justify-center gap-3 mt-10">
             <a href="#job-list">
               <img
@@ -166,7 +164,7 @@ const JobListing = () => {
               />
             </a>
 
-            {Array.from({ length: Math.ceil(selectJobs.length / 6) }).map((_, index) => (
+            {Array.from({ length: Math.ceil(filteredJobs.length / 6) }).map((_, index) => (
               <a key={index} href="#job-list">
                 <button
                   onClick={() => setCurrentPage(index + 1)}
@@ -185,7 +183,7 @@ const JobListing = () => {
               <img
                 onClick={() =>
                   setCurrentPage(
-                    Math.min(currentPage + 1, Math.ceil(selectJobs.length / 6))
+                    Math.min(currentPage + 1, Math.ceil(filteredJobs.length / 6))
                   )
                 }
                 src={assets.right_arrow_icon}

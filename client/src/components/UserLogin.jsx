@@ -2,60 +2,60 @@ import React, { useState, useContext, useEffect } from 'react';
 import { assets } from '../assets/assets';
 import { AppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
 
 const UserLogin = () => {
   const navigate = useNavigate();
-  const { setShowUserLogin, login } = useContext(AppContext);
+  const { setShowUserLogin, login, backendUrl } = useContext(AppContext);
 
   const [state, setState] = useState('Login');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [image, setImage] = useState(null);
-  const [error, setError] = useState('');
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
 
     if (!email || !password || (state === 'Sign Up' && !name)) {
-      setError('Please fill all fields.');
+      toast.error('Please fill all fields.');
       return;
     }
 
     try {
-      let base64Image = '';
-      if (image && state === 'Sign Up') {
-        const reader = new FileReader();
-        base64Image = await new Promise((resolve) => {
-          reader.onload = () => resolve(reader.result);
-          reader.readAsDataURL(image);
+      const endpoint = state === 'Login' ? '/api/users/login' : '/api/users/register';
+      
+      let response;
+      if (state === 'Sign Up') {
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('email', email.trim().toLowerCase());
+        formData.append('password', password);
+        if (image) {
+          formData.append('image', image);
+        }
+        
+        response = await axios.post(`${backendUrl}${endpoint}`, formData);
+      } else {
+        response = await axios.post(`${backendUrl}${endpoint}`, {
+          email: email.trim().toLowerCase(),
+          password
         });
       }
 
-      const endpoint = state === 'Login' ? '/api/users/login' : '/api/users/register';
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: state === 'Sign Up' ? name : undefined,
-          email: email.trim().toLowerCase(),
-          password,
-          image: base64Image,
-        }),
-      });
+      const data = response.data;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.message || 'Authentication failed.');
-        return;
+      if (data.success) {
+        login(data.user, data.token);
+        setShowUserLogin(false);
+        toast.success(state === 'Login' ? 'Login Successful' : 'Account Created Successfully');
+        navigate('/');
+      } else {
+        toast.error(data.message || 'Authentication failed.');
       }
-
-      login(data.user, data.token);
-      setShowUserLogin(false);
-      navigate('/');
     } catch (err) {
-      setError(err.message || 'Network error');
+      toast.error(err.response?.data?.message || err.message || 'Network error');
     }
   };
 
@@ -78,8 +78,6 @@ const UserLogin = () => {
 
         <h1 className='text-center text-2xl text-neutral-700 font-medium'>User {state}</h1>
         <p className='text-sm text-center mt-2'>Please fill in your details to continue</p>
-
-        {error && <p className='text-red-500 text-sm mt-3'>{error}</p>}
 
         {state === 'Sign Up' && (
           <>
@@ -146,7 +144,6 @@ const UserLogin = () => {
             className='text-blue-600 cursor-pointer'
             onClick={() => {
               setState((prev) => (prev === 'Login' ? 'Sign Up' : 'Login'));
-              setError('');
             }}
           >
             {state === 'Login' ? 'Sign Up' : 'Login'}

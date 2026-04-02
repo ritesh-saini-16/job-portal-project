@@ -5,13 +5,18 @@ import { AppContext } from '../context/AppContext'
 
 const Dashboard = () => {
   const navigate = useNavigate()
-  const { user, logout } = useContext(AppContext)
+  const { logoutCompany, companyToken, companyData } = useContext(AppContext)
 
   useEffect(() => {
-    if (!user) {
+    if (!companyToken) {
       navigate('/')
     }
-  }, [user, navigate])
+  }, [companyToken, navigate])
+
+  const handleLogout = () => {
+    logoutCompany()
+    navigate('/')
+  }
 
   return (
     <div className='min-h-screen'>
@@ -19,10 +24,15 @@ const Dashboard = () => {
       {/* Navbar for Recruiter Panel */}
       <div className='shadow py-4'>
         <div className='px-5 flex justify-between items-center'>
-          <img onClick={() => navigate('/')} className='max-sm:w-32 cursor-pointer' src={assets.logo} alt="Logo" />
           <div className='flex items-center gap-3'>
-            <p className='max-sm:hidden'>Hi, {user?.name || 'Guest'}</p>
-            <button className='text-sm text-red-500' onClick={logout}>Logout</button>
+            <img onClick={() => navigate('/')} className='max-sm:w-32 cursor-pointer' src={assets.logo} alt="Logo" />
+            {companyData?.image && (
+              <img className='h-10 max-sm:h-8 cursor-pointer object-contain' src={companyData.image} alt={companyData.name} />
+            )}
+          </div>
+          <div className='flex items-center gap-3'>
+            <p className='max-sm:hidden'>Hi, {companyData?.name || 'Guest'}</p>
+            <button className='text-sm text-red-500' onClick={handleLogout}>Logout</button>
           </div>
         </div>
       </div>
@@ -32,8 +42,12 @@ const Dashboard = () => {
         {/* Left Sidebar */}
         <div className='inline-block min-h-screen border-r-2'>
           <ul className='flex flex-col items-start pt-5 text-gray-800'>
-            <NavLink className={({isActive}) => `flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${isActive && 'bg-blue-100 border-r-4 border-blue-500'}`} to={'/dashboard/manage-jobs'}>
+            <NavLink className={({isActive}) => `flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${isActive && 'bg-blue-100 border-r-4 border-blue-500'}`} to={'/dashboard/overview'}>
               <img className='min-w-4' src={assets.home_icon} alt="" />
+              <p className='max-sm:hidden'>Overview</p>
+            </NavLink>
+            <NavLink className={({isActive}) => `flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${isActive && 'bg-blue-100 border-r-4 border-blue-500'}`} to={'/dashboard/manage-jobs'}>
+              <img className='min-w-4' src={assets.suitcase_icon} alt="" />
               <p className='max-sm:hidden'>Manage Jobs</p>
             </NavLink>
             <NavLink className={({isActive}) => `flex items-center p-3 sm:px-6 gap-2 w-full hover:bg-gray-100 ${isActive && 'bg-blue-100 border-r-4 border-blue-500'}`} to={'/dashboard/add-job'}>
