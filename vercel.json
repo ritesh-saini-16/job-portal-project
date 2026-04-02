@@ -1,23 +1,26 @@
 {
   "version": 2,
-  "functions": {
-    "server/server.js": {
-      "includeFiles": "client/dist/**",
-      "runtime": "@vercel/node"
+  "builds": [
+    {
+      "src": "server/server.js",
+      "use": "@vercel/node",
+      "config": {
+        "includeFiles": ["client/dist/**", "server/**"]
+      }
     }
-  },
-  "rewrites": [
+  ],
+  "routes": [
     {
-      "source": "/api/(.*)",
-      "destination": "/server/server.js"
+      "src": "/api/(.*)",
+      "dest": "server/server.js"
     },
     {
-      "source": "/webhooks",
-      "destination": "/server/server.js"
+      "src": "/webhooks",
+      "dest": "server/server.js"
     },
     {
-      "source": "/(.*)",
-      "destination": "/server/server.js"
+      "src": "/(.*)",
+      "dest": "server/server.js"
     }
   ]
 }
