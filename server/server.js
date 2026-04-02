@@ -81,10 +81,13 @@ app.use('/api/companies', companyroutes);
 app.use('/api/jobs', jobRoutes);
 
 // static files for production
-if (process.env.NODE_ENV === 'production') {
-    app.use(express.static(path.join(__dirname, '../client/dist')));
+if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
+    const distPath = path.resolve(__dirname, '../client/dist');
+    app.use(express.static(distPath));
     app.get('*', (req, res) => {
-        res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+        // Avoid infinite loop if file not found
+        if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API Route Not Found' });
+        res.sendFile(path.join(distPath, 'index.html'));
     });
 }
 

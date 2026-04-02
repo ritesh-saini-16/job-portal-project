@@ -16,6 +16,10 @@
       "destination": "/server/server.js"
     },
     {
+      "source": "/assets/(.*)",
+      "destination": "/client/dist/assets/$1"
+    },
+    {
       "source": "/(.*)",
       "destination": "/server/server.js"
     }
