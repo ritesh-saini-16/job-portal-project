@@ -65,9 +65,9 @@ app.use(express.urlencoded({ extended: true }));
 
 
 // routes
-app.get('/', (req, res) => {
-    res.send('API working');
-})
+app.get('/api/health', (req, res) => {
+    res.json({ success: true, message: 'Server is healthy' });
+});
 
 app.get('/debug-sentry', function mainHandler(req, res){
     throw new Error('Debug Sentry Error');
@@ -82,24 +82,28 @@ app.use('/api/jobs', jobRoutes);
 
 // static files for production
 if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    const distPath = path.resolve(__dirname, '../client/dist');
+    // Use process.cwd() for reliable path resolution on Vercel
+    const distPath = path.join(process.cwd(), 'client/dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
         // Avoid infinite loop if file not found
         if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API Route Not Found' });
-        res.sendFile(path.join(distPath, 'index.html'));
+        
+        const indexPath = path.join(distPath, 'index.html');
+        res.sendFile(indexPath);
     });
 }
 
 // PORT
-
 const PORT = process.env.PORT || 5000;
 
 Sentry.setupExpressErrorHandler(app);
 
-// start server
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+// start server only if NOT on Vercel (Vercel handles its own listener)
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
 
 export default app;

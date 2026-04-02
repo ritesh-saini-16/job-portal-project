@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "server/server.js",
-      "use": "@vercel/node"
+  "functions": {
+    "server/server.js": {
+      "includeFiles": "client/dist/**",
+      "runtime": "@vercel/node"
     }
-  ],
+  },
   "rewrites": [
     {
       "source": "/api/(.*)",
@@ -14,10 +14,6 @@
     {
       "source": "/webhooks",
       "destination": "/server/server.js"
-    },
-    {
-      "source": "/assets/(.*)",
-      "destination": "/client/dist/assets/$1"
     },
     {
       "source": "/(.*)",
