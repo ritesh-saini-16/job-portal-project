@@ -7,7 +7,7 @@ const __dirname = path.dirname(__filename);
 
 // load environment variables from root directory
 if (process.env.NODE_ENV !== 'production') {
-    dotenv.config({ path: path.join(__dirname, '../.env') });
+    dotenv.config({ path: path.resolve(__dirname, '../.env') });
 }
 
 import Sentry from './config/instrument.js';
@@ -40,7 +40,8 @@ const allowedOrigins = [
   'http://127.0.0.1:5173',
   'http://127.0.0.1:5174',
   'http://127.0.0.1:5175',
-  process.env.FRONTEND_URL
+  process.env.FRONTEND_URL,
+  'https://' + process.env.VERCEL_URL
 ].filter(Boolean);
 
 app.use(cors({

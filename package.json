@@ -1,0 +1,31 @@
+{
+  "name": "job-portal-project",
+  "version": "1.0.0",
+  "description": "Job Portal Project",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "npm install --prefix client && npm run build --prefix client",
+    "start": "node server/server.js",
+    "server": "nodemon server/server.js"
+  },
+  "dependencies": {
+    "@clerk/express": "^2.0.8",
+    "@sentry/node": "^10.46.0",
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.9.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.3.1",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.3.3",
+    "multer": "^2.1.1",
+    "svix": "^1.42.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
