@@ -12,7 +12,6 @@
   "routes": [
     { "src": "/api/(.*)", "dest": "server/api/index.js" },
     { "src": "/webhooks", "dest": "server/api/index.js" },
-    { "src": "/dist/(.*)", "dest": "/dist/$1" },
     { "src": "/(.*)", "dest": "server/api/index.js" }
   ]
 }
