@@ -102,6 +102,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // Initialize app on first request (gracefully handles failures)
 app.use(async (req, res, next) => {
+    // Initialize only for API/webhook routes to avoid blocking static page loads.
+    if (!req.path.startsWith('/api/') && req.path !== '/webhooks') {
+        return next();
+    }
+
     // Skip initialization for health checks
     if (req.path === '/api/health') {
         return next();

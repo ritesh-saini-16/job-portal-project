@@ -5,7 +5,7 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && cp -r client/dist ./dist",
+    "build": "npm --prefix client install --legacy-peer-deps && npm --prefix client run build && node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.cpSync('client/dist','dist',{recursive:true});\"",
     "start": "node server.js",
     "server": "nodemon server.js",
     "dev": "npm run server"

@@ -7,21 +7,21 @@ Go to **Vercel Dashboard → Project Settings → Environment Variables**
 Make sure ALL of these are set for **Production** environment:
 
 ### Database
-- [ ] `MONGODB_URI` = `mongodb+srv://riteshsaini6375:Ritesh%407713@cluster0.vboin3b.mongodb.net/?retryWrites=true&w=majority`
-- [ ] `MONGO_FALLBACK_LOCAL` = `true`
+- [ ] `MONGODB_URI` = `mongodb+srv://<user>:<password>@<cluster>.mongodb.net/?retryWrites=true&w=majority`
+- [ ] `MONGO_FALLBACK_LOCAL` = `false`
 
 ### Clerk (Authentication)
-- [ ] `CLERK_WEBHOOK_SECRET` = `whsec_RwkL3bHgi73z96ykCAsMw8W6bY+nSKPm`
-- [ ] `CLERK_PUBLISHABLE_KEY` = `pk_test_ZmluZS1zdW5iaXJkLTMzLmNsZXJrLmFjY291bnRzLmRldiQ`
-- [ ] `CLERK_SECRET_KEY` = `sk_test_KNu1vchzbAFnlT08eBEwPcp0VpoX1DYgjg9dHtbg4O`
+- [ ] `CLERK_WEBHOOK_SECRET` = `your_clerk_webhook_secret`
+- [ ] `CLERK_PUBLISHABLE_KEY` = `your_clerk_publishable_key`
+- [ ] `CLERK_SECRET_KEY` = `your_clerk_secret_key`
 
 ### Cloudinary (File Uploads)
-- [ ] `CLOUDINARY_NAME` = `dgpj5opcj`
-- [ ] `CLOUDINARY_API_KEY` = `653328459388429`
-- [ ] `CLOUDINARY_SECRET_KEY` = `Dv7Hbzevjqb0Wh4sqTVjlqxzGAM`
+- [ ] `CLOUDINARY_NAME` = `your_cloudinary_name`
+- [ ] `CLOUDINARY_API_KEY` = `your_cloudinary_api_key`
+- [ ] `CLOUDINARY_SECRET_KEY` = `your_cloudinary_secret_key`
 
 ### App Settings
-- [ ] `JWT_SECRET` = `dev#secret`
+- [ ] `JWT_SECRET` = `your_secure_jwt_secret`
 - [ ] `NODE_ENV` = `production`
 
 ### Frontend URLs (for CORS)
