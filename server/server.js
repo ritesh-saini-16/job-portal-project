@@ -82,12 +82,11 @@ app.use('/api/jobs', jobRoutes);
 
 // static files for production
 if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    const distPath = path.resolve(process.cwd(), 'client/dist');
+    const distPath = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
         if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API Route Not Found' });
         
-        // Ensure index.html exists before sending
         const indexPath = path.resolve(distPath, 'index.html');
         res.sendFile(indexPath);
     });
