@@ -4,7 +4,7 @@ A full-stack job portal application with a React (Vite) frontend and an Express 
 
 ## Live site
 
-**Production:** [https://job-portal-project-pink.vercel.app/](https://job-portal-project-pink.vercel.app/)
+**Production:** [https://hirehub-rish.vercel.app/][(https://hirehub-rish.vercel.app/)]
 
 ## Local development
 
