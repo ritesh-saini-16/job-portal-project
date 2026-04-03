@@ -5,7 +5,7 @@
   "type": "module",
   "main": "server/server.js",
   "scripts": {
-    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && mkdir dist && cp -r client/dist/* ./dist/",
+    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && cp -r client/dist ./dist",
     "start": "node server/server.js",
     "server": "nodemon server/server.js",
     "dev": "npm run server"
@@ -25,6 +25,6 @@
     "svix": "^1.42.0"
   },
   "engines": {
-    "node": ">=18.x"
+    "node": "20.x"
   }
 }
