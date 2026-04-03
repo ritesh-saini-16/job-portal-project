@@ -31,26 +31,39 @@ let initPromise = null;
 
 // Initialize app dependencies (lazy loaded)
 async function initializeApp() {
-    if (isInitialized) return;
+    if (isInitialized) return Promise.resolve();
     if (initPromise) return initPromise;
 
     initPromise = (async () => {
         try {
+            console.log("🔄 Starting initialization...");
+            
             // connect to the database
-            await connectDB().catch(err => {
-                console.error("⚠️  DB Connection Warning on startup:", err.message);
-                console.warn("Server will run but database operations may fail");
-            });
+            try {
+                await connectDB();
+                console.log("✅ Database connected");
+            } catch (err) {
+                console.error("⚠️  DB Connection Warning:", err.message);
+                console.warn("⚠️  Server will run but database operations may fail");
+            }
 
-            await connectCloudinary().catch(err => {
+            // Connect to Cloudinary
+            try {
+                await connectCloudinary();
+                console.log("✅ Cloudinary connected");
+            } catch (err) {
                 console.error("⚠️  Cloudinary Connection Warning:", err.message);
-            });
+                console.warn("⚠️  Server will run but file uploads may fail");
+            }
 
             isInitialized = true;
             console.log("✅ App initialized successfully");
+            return true;
         } catch (error) {
-            console.error("Error during initialization:", error);
-            throw error;
+            console.error("❌ Critical error during initialization:", error);
+            // Don't throw - let app continue anyway
+            isInitialized = true;
+            return false;
         }
     })();
 
@@ -87,14 +100,20 @@ app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Initialize app on first request
+// Initialize app on first request (gracefully handles failures)
 app.use(async (req, res, next) => {
+    // Skip initialization for health checks
+    if (req.path === '/api/health') {
+        return next();
+    }
+    
     try {
         await initializeApp();
         next();
     } catch (error) {
         console.error('Error during app initialization:', error);
-        return res.status(500).json({ error: 'Server initialization failed' });
+        // Still pass to next - don't crash
+        next();
     }
 });
 
@@ -135,6 +154,15 @@ if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
 const PORT = process.env.PORT || 5000;
 
 Sentry.setupExpressErrorHandler(app);
+
+// Global error handler
+app.use((err, req, res, next) => {
+    console.error('❌ Unhandled error:', err);
+    res.status(500).json({ 
+        error: 'Internal Server Error',
+        message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+    });
+});
 
 // start server only if NOT on Vercel (Vercel handles its own listener)
 if (!process.env.VERCEL) {
