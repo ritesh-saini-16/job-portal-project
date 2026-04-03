@@ -1,18 +1,15 @@
 {
   "name": "job-portal-project",
   "version": "1.0.0",
-  "description": "Job Portal Project",
-  "main": "server/server.js",
+  "private": true,
   "type": "module",
+  "main": "server/server.js",
   "scripts": {
-    "build": "npm --prefix client install --legacy-peer-deps && npm --prefix client run build && node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.cpSync('client/dist','dist',{recursive:true});\"",
+    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && cp -r client/dist ./dist",
     "start": "node server/server.js",
     "server": "nodemon server/server.js",
     "dev": "npm run server"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@clerk/express": "^2.0.8",
     "@sentry/node": "^10.46.0",
