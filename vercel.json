@@ -2,25 +2,25 @@
   "version": 2,
   "builds": [
     {
-      "src": "server/server.js",
+      "src": "server.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist/**", "server/**"]
+        "includeFiles": ["dist/**", "config/**", "controllers/**", "middleware/**", "models/**", "routes/**", "utils/**", "uploads/**"]
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server/server.js"
+      "dest": "server.js"
     },
     {
       "src": "/webhooks",
-      "dest": "server/server.js"
+      "dest": "server.js"
     },
     {
       "src": "/(.*)",
-      "dest": "server/server.js"
+      "dest": "server.js"
     }
   ]
 }

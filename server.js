@@ -1,5 +1,6 @@
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -7,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 // load environment variables from root directory
 if (process.env.NODE_ENV !== 'production') {
-    dotenv.config({ path: path.resolve(__dirname, '../.env') });
+    dotenv.config();
 }
 
 import Sentry from './config/instrument.js';
@@ -41,7 +42,7 @@ const allowedOrigins = [
   'http://127.0.0.1:5174',
   'http://127.0.0.1:5175',
   process.env.FRONTEND_URL,
-  'https://' + process.env.VERCEL_URL
+  process.env.VERCEL_URL ? 'https://' + process.env.VERCEL_URL : null
 ].filter(Boolean);
 
 app.use(cors({
@@ -88,7 +89,12 @@ if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
         if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API Route Not Found' });
         
         const indexPath = path.resolve(distPath, 'index.html');
-        res.sendFile(indexPath);
+        // Check if file exists to provide better error feedback
+        if (fs.existsSync(indexPath)) {
+            res.sendFile(indexPath);
+        } else {
+            res.status(404).send('Frontend build not found. Please run build script.');
+        }
     });
 }
 
