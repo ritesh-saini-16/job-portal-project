@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// load environment variables from repo root (works when cwd is root or serverless)
+// load environment variables
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config({ path: path.resolve(__dirname, '../.env') });
     dotenv.config({ path: path.resolve(__dirname, '.env') });
@@ -19,57 +19,24 @@ import connectDB from './config/db.js';
 import userRoutes from './routes/userRoutes.js';
 import recruiterRoutes from './routes/recruiterRoutes.js';
 import { clerkWebhooks } from './controllers/webhooks.js';
-import companyroutes from './routes/companyRoutes.js';
+import companyRoutes from './routes/companyRoutes.js';
 import connectCloudinary from './config/cloudinary.js';
 import jobRoutes from './routes/jobRoutes.js';
 
 // initialize express
 const app = express();
 
-// Track initialization state
-let isInitialized = false;
-let initPromise = null;
+// debug environment
+console.log("🚀 Starting server in " + (process.env.NODE_ENV || 'development') + " mode");
+console.log("📂 Current directory: " + process.cwd());
+console.log("🔑 Checking environment variables:");
+['MONGODB_URI', 'CLOUDINARY_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_SECRET_KEY', 'JWT_SECRET', 'CLERK_WEBHOOK_SECRET'].forEach(env => {
+    console.log(`   - ${env}: ${process.env[env] ? '✅ Loaded' : '❌ Missing'}`);
+});
 
-// Initialize app dependencies (lazy loaded)
-async function initializeApp() {
-    if (isInitialized) return Promise.resolve();
-    if (initPromise) return initPromise;
-
-    initPromise = (async () => {
-        try {
-            console.log("🔄 Starting initialization...");
-            
-            // connect to the database
-            try {
-                await connectDB();
-                console.log("✅ Database connected");
-            } catch (err) {
-                console.error("⚠️  DB Connection Warning:", err.message);
-                console.warn("⚠️  Server will run but database operations may fail");
-            }
-
-            // Connect to Cloudinary
-            try {
-                await connectCloudinary();
-                console.log("✅ Cloudinary connected");
-            } catch (err) {
-                console.error("⚠️  Cloudinary Connection Warning:", err.message);
-                console.warn("⚠️  Server will run but file uploads may fail");
-            }
-
-            isInitialized = true;
-            console.log("✅ App initialized successfully");
-            return true;
-        } catch (error) {
-            console.error("❌ Critical error during initialization:", error);
-            // Don't throw - let app continue anyway
-            isInitialized = true;
-            return false;
-        }
-    })();
-
-    return initPromise;
-}
+// connect to the database and services (non-blocking for startup)
+connectDB().catch(err => console.error("⚠️ DB Connection Error:", err.message));
+connectCloudinary().catch(err => console.error("⚠️ Cloudinary Error:", err.message));
 
 // middleware - CORS must be before routes
 const allowedOrigins = [
@@ -85,9 +52,7 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
+    if (!origin || allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV !== 'production') {
       callback(null, true);
     } else {
       callback(new Error('Not allowed by CORS'));
@@ -97,54 +62,31 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'token', 'Authorization']
 }));
+
 app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Initialize app on first request (gracefully handles failures)
-app.use(async (req, res, next) => {
-    // Initialize only for API/webhook routes to avoid blocking static page loads.
-    if (!req.path.startsWith('/api/') && req.path !== '/webhooks') {
-        return next();
-    }
-
-    // Skip initialization for health checks
-    if (req.path === '/api/health') {
-        return next();
-    }
-    
-    try {
-        await initializeApp();
-        next();
-    } catch (error) {
-        console.error('Error during app initialization:', error);
-        // Still pass to next - don't crash
-        next();
-    }
-});
-
 // routes
 app.get('/api/health', (req, res) => {
-    res.json({ success: true, message: 'Server is healthy' });
+    res.json({ success: true, message: 'Server is healthy', env: process.env.NODE_ENV });
 });
 
 app.get('/debug-sentry', function mainHandler(req, res){
     throw new Error('Debug Sentry Error');
 })
 
-
 // auth endpoints
 app.use('/api/users', userRoutes);
 app.use('/api/recruiters', recruiterRoutes);
-app.use('/api/companies', companyroutes);
+app.use('/api/companies', companyRoutes);
 app.use('/api/jobs', jobRoutes);
 
 // static files for production
-if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
-    const distPath = path.resolve(process.cwd(), 'dist');
+const distPath = path.resolve(process.cwd(), 'dist');
+if (fs.existsSync(distPath)) {
     app.use(express.static(distPath));
-    // Express 5 / path-to-regexp v8: avoid app.get('*', ...) — use middleware fallback instead
-    app.use((req, res) => {
+    app.get('*', (req, res) => {
         if (req.path.startsWith('/api/')) {
             return res.status(404).json({ success: false, message: 'API Route Not Found' });
         }
@@ -152,8 +94,16 @@ if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
         if (fs.existsSync(indexPath)) {
             res.sendFile(indexPath);
         } else {
-            res.status(404).send('Frontend build not found. Please run build script.');
+            res.status(404).send('Frontend build not found.');
         }
+    });
+} else {
+    // Fallback for Vercel if dist is in a different location or not found
+    app.get('*', (req, res) => {
+        if (req.path.startsWith('/api/')) {
+            return res.status(404).json({ success: false, message: 'API Route Not Found' });
+        }
+        res.status(404).send('Static folder not found at ' + distPath);
     });
 }
 
@@ -165,13 +115,13 @@ Sentry.setupExpressErrorHandler(app);
 // Global error handler
 app.use((err, req, res, next) => {
     console.error('❌ Unhandled error:', err);
-    res.status(500).json({ 
-        error: 'Internal Server Error',
+    res.status(err.status || 500).json({ 
+        success: false,
         message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
     });
 });
 
-// start server only if NOT on Vercel (Vercel handles its own listener)
+// start server only if NOT on Vercel
 if (!process.env.VERCEL) {
     app.listen(PORT, () => {
         console.log(`Server running on port ${PORT}`);
