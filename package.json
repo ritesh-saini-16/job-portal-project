@@ -5,9 +5,10 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && mv client/dist ./dist",
+    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && move client\\dist .\\dist",
     "start": "node server.js",
-    "server": "nodemon server.js"
+    "server": "nodemon server.js",
+    "dev": "npm run server"
   },
   "keywords": [],
   "author": "",

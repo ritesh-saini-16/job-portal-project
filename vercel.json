@@ -1,26 +1,33 @@
 {
   "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "builds": [
     {
-      "src": "server.js",
+      "src": "api/handler.js",
       "use": "@vercel/node",
       "config": {
-        "includeFiles": ["dist/**", "config/**", "controllers/**", "middleware/**", "models/**", "routes/**", "utils/**", "uploads/**"]
+        "includeFiles": ["dist/**", "config/**", "controllers/**", "middleware/**", "models/**", "routes/**", "utils/**"]
       }
     }
   ],
   "routes": [
     {
       "src": "/api/(.*)",
-      "dest": "server.js"
+      "dest": "api/handler.js"
     },
     {
       "src": "/webhooks",
-      "dest": "server.js"
+      "dest": "api/handler.js"
     },
     {
-      "src": "/(.*)",
-      "dest": "server.js"
+      "src": "/.*",
+      "dest": "api/handler.js"
     }
-  ]
+  ],
+  "env": {
+    "NODE_ENV": "production",
+    "VERCEL": "true"
+  }
 }
+
