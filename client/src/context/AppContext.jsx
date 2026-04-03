@@ -17,7 +17,7 @@ function normalizeUser(raw) {
 
 export const AppContextProvider = (props) => {
 
-  const backendUrl = (import.meta.env.VITE_BACKEND_URL || "http://localhost:5000").replace(/\/$/, "");
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "";
 
   const [searchFilter, setSearchFilter] = useState({
     title: '',

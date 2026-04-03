@@ -86,7 +86,10 @@ if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     app.use(express.static(distPath));
     app.get('*', (req, res) => {
         if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API Route Not Found' });
-        res.sendFile(path.resolve(distPath, 'index.html'));
+        
+        // Ensure index.html exists before sending
+        const indexPath = path.resolve(distPath, 'index.html');
+        res.sendFile(indexPath);
     });
 }
 
