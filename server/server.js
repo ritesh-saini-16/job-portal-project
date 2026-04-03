@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 // load environment variables from repo root (works when cwd is root or serverless)
 if (process.env.NODE_ENV !== 'production') {
     dotenv.config({ path: path.resolve(__dirname, '../.env') });
+    dotenv.config({ path: path.resolve(__dirname, '.env') });
 }
 
 import Sentry from './config/instrument.js';
