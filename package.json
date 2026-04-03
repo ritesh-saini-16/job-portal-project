@@ -5,7 +5,8 @@
   "type": "module",
   "main": "server/server.js",
   "scripts": {
-    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && cp -r client/dist .",
+    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && mv client/dist dist",
+    "vercel-build": "npm run build",
     "start": "node server/server.js",
     "server": "nodemon server/server.js",
     "dev": "npm run server"
@@ -21,10 +22,12 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^8.10.0",
     "multer": "^1.4.5-lts.1",
-    "nodemon": "^3.1.14",
     "svix": "^1.42.0"
   },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  },
   "engines": {
-    "node": "20.x"
+    "node": "24.x"
   }
 }
