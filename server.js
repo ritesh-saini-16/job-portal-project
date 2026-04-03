@@ -25,13 +25,37 @@ import jobRoutes from './routes/jobRoutes.js';
 // initialize express
 const app = express();
 
-// connect to the database
-await connectDB().catch(err => {
-  console.error("⚠️  DB Connection Warning on startup:", err.message);
-  console.warn("Server will run but database operations may fail");
-});
+// Track initialization state
+let isInitialized = false;
+let initPromise = null;
 
-await connectCloudinary();
+// Initialize app dependencies (lazy loaded)
+async function initializeApp() {
+    if (isInitialized) return;
+    if (initPromise) return initPromise;
+
+    initPromise = (async () => {
+        try {
+            // connect to the database
+            await connectDB().catch(err => {
+                console.error("⚠️  DB Connection Warning on startup:", err.message);
+                console.warn("Server will run but database operations may fail");
+            });
+
+            await connectCloudinary().catch(err => {
+                console.error("⚠️  Cloudinary Connection Warning:", err.message);
+            });
+
+            isInitialized = true;
+            console.log("✅ App initialized successfully");
+        } catch (error) {
+            console.error("Error during initialization:", error);
+            throw error;
+        }
+    })();
+
+    return initPromise;
+}
 
 // middleware - CORS must be before routes
 const allowedOrigins = [
@@ -63,7 +87,16 @@ app.post('/webhooks', express.raw({ type: 'application/json' }), clerkWebhooks);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-
+// Initialize app on first request
+app.use(async (req, res, next) => {
+    try {
+        await initializeApp();
+        next();
+    } catch (error) {
+        console.error('Error during app initialization:', error);
+        return res.status(500).json({ error: 'Server initialization failed' });
+    }
+});
 
 // routes
 app.get('/api/health', (req, res) => {
