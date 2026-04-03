@@ -3,7 +3,7 @@ import { getUserData, applyForJob, getUserJobApplications, updateUserResume, reg
 import { protectUser } from '../middleware/authMiddleware.js';
 import multer from 'multer';
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: 'server/uploads/' });
 const router = express.Router();
 
 // register user

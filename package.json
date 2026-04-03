@@ -2,12 +2,12 @@
   "name": "job-portal-project",
   "version": "1.0.0",
   "description": "Job Portal Project",
-  "main": "server.js",
+  "main": "server/server.js",
   "type": "module",
   "scripts": {
     "build": "npm --prefix client install --legacy-peer-deps && npm --prefix client run build && node -e \"const fs=require('fs');fs.rmSync('dist',{recursive:true,force:true});fs.cpSync('client/dist','dist',{recursive:true});\"",
-    "start": "node server.js",
-    "server": "nodemon server.js",
+    "start": "node server/server.js",
+    "server": "nodemon server/server.js",
     "dev": "npm run server"
   },
   "keywords": [],

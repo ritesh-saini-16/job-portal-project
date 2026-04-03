@@ -5,7 +5,7 @@ import Recruiter from '../models/Recruiter.js';
 import multer from 'multer';
 import { cloudinary } from '../config/cloudinary.js';
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: 'server/uploads/' });
 const router = express.Router();
 
 router.post('/register', upload.single('image'), async (req, res) => {

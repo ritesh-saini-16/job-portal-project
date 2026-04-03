@@ -6,9 +6,9 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// load environment variables from root directory
+// load environment variables from repo root (works when cwd is root or serverless)
 if (process.env.NODE_ENV !== 'production') {
-    dotenv.config();
+    dotenv.config({ path: path.resolve(__dirname, '../.env') });
 }
 
 import Sentry from './config/instrument.js';
@@ -142,11 +142,12 @@ app.use('/api/jobs', jobRoutes);
 if (process.env.NODE_ENV === 'production' || process.env.VERCEL) {
     const distPath = path.resolve(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req, res) => {
-        if (req.path.startsWith('/api/')) return res.status(404).json({ success: false, message: 'API Route Not Found' });
-        
+    // Express 5 / path-to-regexp v8: avoid app.get('*', ...) — use middleware fallback instead
+    app.use((req, res) => {
+        if (req.path.startsWith('/api/')) {
+            return res.status(404).json({ success: false, message: 'API Route Not Found' });
+        }
         const indexPath = path.resolve(distPath, 'index.html');
-        // Check if file exists to provide better error feedback
         if (fs.existsSync(indexPath)) {
             res.sendFile(indexPath);
         } else {

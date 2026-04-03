@@ -4,7 +4,7 @@ import multer from 'multer';
 import{registerCompany, loginCompany, getCompanyData, postJob, getCompanyJobApplicants, changeJobApplicationStatus, changeJobVisibility, getCompanyPostedJobs, getCompanyStats} from '../controllers/companyController.js';   
 import { protectCompany } from '../middleware/authMiddleware.js';
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({ dest: 'server/uploads/' });
 const router = express.Router();
 
 // register a company
