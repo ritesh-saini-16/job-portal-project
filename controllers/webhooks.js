@@ -1,5 +1,4 @@
-import pkg from 'svix';
-const { Webhooks } = pkg;
+import { Webhook } from 'svix';
 import User from "../models/User.js"
 
 // API controller function to manage clerk wuse with database
@@ -7,15 +6,13 @@ import User from "../models/User.js"
 export const clerkWebhooks = async(req , res)=>{
     try{
         // CREATE a svix instance wiith webhook secret
-        const whook = new Webhooks({
-            secret: process.env.CLERK_WEBHOOK_SECRET
-        })
+        const whook = new Webhook(process.env.CLERK_WEBHOOK_SECRET);
 
         const payload =
           Buffer.isBuffer(req.body) ? req.body.toString('utf8') : JSON.stringify(req.body || {});
 
         // verifying header
-        await whook.verify(payload,{
+        whook.verify(payload,{
             "svix-id" : req.headers["svix-id"],
             "svix-timestamp" : req.headers["svix-timestamp"],
             "svix-signature" : req.headers["svix-signature"],
