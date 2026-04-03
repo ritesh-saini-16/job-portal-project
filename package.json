@@ -5,7 +5,7 @@
   "type": "module",
   "main": "server/server.js",
   "scripts": {
-    "build": "cd client && npm install && npm run build && cd .. && rm -rf dist && mv client/dist dist",
+    "build": "cd client && npm install && npm run build && cd .. && npx rimraf dist && npx cpx \"client/dist/**\" dist",
     "vercel-build": "npm run build",
     "start": "node server/server.js",
     "server": "nodemon server/server.js",
@@ -25,7 +25,9 @@
     "svix": "^1.42.0"
   },
   "devDependencies": {
-    "nodemon": "^3.1.14"
+    "nodemon": "^3.1.14",
+    "rimraf": "^5.0.0",
+    "cpx": "^1.5.0"
   },
   "engines": {
     "node": "24.x"
